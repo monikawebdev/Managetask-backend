@@ -79,3 +79,40 @@ exports.loginUser = async (req, res) => {
         res.status(500).json({ error: 'Server error. Please try again.' });
     }
 };   
+
+
+exports.logout = async (req, res) => {
+    // res.cookie('token', '', { httpOnly: true, maxAge: 1 });
+    res.clearCookie('token', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'None'
+    });
+    res.status(200).json({ msg: 'Logged out successfully' });
+  };
+  
+  exports.protectedCheck = async (req,res) => {
+    try{
+      if (req.user) {
+        res.status(200).json({ message: "Authenticated",
+          _id: req._id, 
+      });
+      }else{
+        res.status(401).json({msg:"Unauthorised"});
+      }
+    }catch(err){
+      res.status(500).json({ error: `Error: ${err.message}` });
+    }
+  }
+  
+  exports.getProfile = async (req, res) => {
+    try {
+        const userProfile = await User.findOne({ _id: req.user }).select('-password -__v -_id');
+        if (!userProfile) {
+            return res.status(404).json({ error: 'No user found' });
+        }
+        res.json(userProfile);
+    } catch (err) {
+        res.status(500).json({ error: `Error: ${err.message}` });
+    }
+  }
