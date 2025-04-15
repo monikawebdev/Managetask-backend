@@ -23,6 +23,7 @@ const corsOptionsDelegate = (req, callback) => {
   }
 
   // Pass the options to the callback
+  console.log(`CORS - Request Origin: ${origin}, Allowed: ${corsOptions.origin}`);
   callback(null, corsOptions);
 };
 

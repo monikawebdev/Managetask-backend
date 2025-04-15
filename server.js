@@ -14,6 +14,7 @@ connectDB();
 
 // Middleware
 app.use(cors(corsOptionsDelegate));
+app.options('*', cors(corsOptionsDelegate)); // Handle preflight requests for all routes
 app.use(bodyParser.json());
 app.use(cookieParser());
 app.use(express.json());
