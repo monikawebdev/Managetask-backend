@@ -35,8 +35,8 @@ exports.registerUser = async (req, res) => {
 
         res.status(201).json({ message: 'User registered successfully' });
     } catch (err) {
-        console.error('Error in registerUser:', err); // Log the full error
-        res.status(500).json('Error in registerUser:', err);
+        console.error('Error in registerUser:', err.message); // Log error message
+        res.status(500).json({ error: 'Server error. Please try again.' });
     }
 };
 
@@ -53,13 +53,13 @@ exports.loginUser = async (req, res) => {
         // Check if the user exists
         const user = await User.findOne({ email });
         if (!user) {
-            return res.status(401).json({ error: 'User not found' });
+            return res.status(401).json({ error: 'Invalid email or password' });
         }
 
         // Compare the provided password with the stored hashed password
         const isPasswordValid = await bcrypt.compare(password, user.password);
         if (!isPasswordValid) {
-            return res.status(401).json({ error: 'Invalid credentials' });
+            return res.status(401).json({ error: 'Invalid email or password' });
         }
 
         // Generate a JWT token
@@ -69,50 +69,57 @@ exports.loginUser = async (req, res) => {
         const cookieOptions = { 
             httpOnly: true, 
             secure: process.env.NODE_ENV === 'production', 
-            sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax'
+            sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax',
+            maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days in milliseconds
         };
         res.cookie('token', token, cookieOptions);
 
-        res.status(200).json({ message: 'Login successful' });
+        res.status(200).json({ message: 'Login successful', token });
     } catch (err) {
-        console.error('Error in loginUser:', err); // Log the full error
+        console.error('Error in loginUser:', err.message); // Log error message
         res.status(500).json({ error: 'Server error. Please try again.' });
     }
-};   
+};
 
-
+// Logout User
 exports.logout = async (req, res) => {
-    // res.cookie('token', '', { httpOnly: true, maxAge: 1 });
-    res.clearCookie('token', {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'None'
-    });
-    res.status(200).json({ msg: 'Logged out successfully' });
-  };
-  
-  exports.protectedCheck = async (req,res) => {
-    try{
-      if (req.user) {
-        res.status(200).json({ message: "Authenticated",
-          _id: req._id, 
-      });
-      }else{
-        res.status(401).json({msg:"Unauthorised"});
-      }
-    }catch(err){
-      res.status(500).json({ error: `Error: ${err.message}` });
-    }
-  }
-  
-  exports.getProfile = async (req, res) => {
     try {
-        const userProfile = await User.findOne({ _id: req.user }).select('-password -__v -_id');
-        if (!userProfile) {
-            return res.status(404).json({ error: 'No user found' });
-        }
-        res.json(userProfile);
+        res.clearCookie('token', {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'None'
+        });
+        res.status(200).json({ message: 'Logged out successfully' });
     } catch (err) {
-        res.status(500).json({ error: `Error: ${err.message}` });
+        console.error('Error in logout:', err.message); // Log error message
+        res.status(500).json({ error: 'Server error. Please try again.' });
     }
-  }
+};
+
+// Protected Route Check
+exports.protectedCheck = async (req, res) => {
+    try {
+        if (req.user) {
+            res.status(200).json({ message: 'Authenticated', userId: req.user.id });
+        } else {
+            res.status(401).json({ error: 'Unauthorized' });
+        }
+    } catch (err) {
+        console.error('Error in protectedCheck:', err.message); // Log error message
+        res.status(500).json({ error: 'Server error. Please try again.' });
+    }
+};
+
+// Get Profile
+exports.getProfile = async (req, res) => {
+    try {
+        const userProfile = await User.findById(req.user.id).select('-password -__v');
+        if (!userProfile) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+        res.status(200).json(userProfile);
+    } catch (err) {
+        console.error('Error in getProfile:', err.message); // Log error message
+        res.status(500).json({ error: 'Server error. Please try again.' });
+    }
+};

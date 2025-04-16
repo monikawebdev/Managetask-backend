@@ -10,20 +10,22 @@ const corsOptionsDelegate = require('./middleware/corsOptionsDelegate');
 const app = express();
 
 // Connect to the database
-connectDB();
-
-// // OPTIONS preflight for all routes
-// app.options('*', cors());
+connectDB()
+    .then(() => console.log('Database connected successfully'))
+    .catch((err) => {
+        console.error('Database connection failed:', err.message);
+        process.exit(1); // Exit the process if DB connection fails
+    });
 
 // Middleware
-app.use(cors(corsOptionsDelegate));
-app.use(bodyParser.json());
-app.use(cookieParser());
-app.use(express.json());
+app.use(cors(corsOptionsDelegate)); // Enable CORS with custom options
+app.use(bodyParser.json()); // Parse JSON bodies
+app.use(cookieParser()); // Parse cookies
+app.use(express.json()); // Parse JSON requests
 
 // Routes
-app.use('/api/auth', require('./routes/userRoutes'));
-app.use('/api/task', require('./routes/taskRoutes'));
+app.use('/api/auth', require('./routes/userRoutes')); // Routes for authentication
+app.use('/api/task', require('./routes/taskRoutes')); // Routes for tasks
 
 // Root route
 app.get('/', (req, res) => {
@@ -33,6 +35,12 @@ app.get('/', (req, res) => {
             <title>Task {Backend}</title>
         </div>
     `);
+});
+
+// Global error handling middleware
+app.use((err, req, res, next) => {
+    console.error('Global Error Handler:', err.stack);
+    res.status(err.status || 500).json({ message: err.message || 'Internal Server Error' });
 });
 
 // Start the server
