@@ -1,11 +1,11 @@
 const mongoose = require('mongoose');
 
-const TaskSchema = new mongoose.Schema({
-    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+const taskSchema = new mongoose.Schema({
     title: { type: String, required: true },
+    dueDate: { type: Date }, // Ensure this is a Date type
+    priority: { type: String, enum: ['High', 'Medium', 'Low'] },
+    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }, // Ensure this is ObjectId
     isCompleted: { type: Boolean, default: false },
-    dueDate: { type: Date },
-    priority: { type: String, enum: ['High', 'Medium', 'Low'], default: 'Medium' }
 });
 
-module.exports = mongoose.model('Task', TaskSchema);
+module.exports = mongoose.model('Task', taskSchema);

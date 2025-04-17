@@ -1,21 +1,27 @@
 const express = require('express');
 require('dotenv').config();
-const connectDB = require('./models/db');
+const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const cors = require('cors');
 const corsOptionsDelegate = require('./middleware/corsOptionsDelegate');
 
+// Database Connection
+const connectDB = async () => {
+    try {
+        await mongoose.connect(process.env.MONGO_URI); // Removed deprecated options
+        console.log('MongoDB Connected:', mongoose.connection.host);
+    } catch (err) {
+        console.error('Database connection failed:', err.message);
+        process.exit(1); // Exit the process if DB connection fails
+    }
+};
+
 // Initialize the app
 const app = express();
 
 // Connect to the database
-connectDB()
-    .then(() => console.log('Database connected successfully'))
-    .catch((err) => {
-        console.error('Database connection failed:', err.message);
-        process.exit(1); // Exit the process if DB connection fails
-    });
+connectDB();
 
 // Middleware
 app.use(cors(corsOptionsDelegate)); // Enable CORS with custom options
