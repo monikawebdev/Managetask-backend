@@ -1,5 +1,5 @@
 const allowedOrigins = new Set([
-  'https://taskbotsite.vercel.app/', // Frontend production URL
+  'https://taskmanagerbymonika.vercel.app/', // Frontend production URL
   'http://localhost:5173', // Frontend local development URL
   'http://localhost:5174', // Add this origin for local development
 ]);
