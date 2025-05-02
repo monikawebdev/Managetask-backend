@@ -1,5 +1,5 @@
 const allowedOrigins = new Set([
-  'https://taskmanagerbymonika.vercel.app/', // Frontend production URL
+  'https://taskmanagerbymonika.vercel.app', // Fixed: Removed trailing slash from production URL
   'http://localhost:5173', // Frontend local development URL
   'http://localhost:5174', // Add this origin for local development
 ]);
@@ -16,9 +16,9 @@ const corsOptionsDelegate = (req, callback) => {
       credentials: true, // Allow cookies and credentials
       methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Added OPTIONS for preflight
       allowedHeaders: ['Content-Type', 'Authorization'], // Allowed headers
-      exposedHeaders: ['Content-Length', 'X-Requested-With'],
+      exposedHeaders: ['Content-Length', 'X-Requested-With'], // Headers exposed to the client
       optionsSuccessStatus: 200, // For preflight requests
-      preflightContinue: false // Important for proper handling of preflight
+      preflightContinue: false, // Stop preflight from continuing to other middleware
     };
   } else {
     corsOptions = { origin: false }; // Reject other origins
